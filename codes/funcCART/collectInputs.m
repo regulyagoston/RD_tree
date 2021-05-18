@@ -21,6 +21,7 @@ for i = 1 : nV
                 varargout{ i } = NaN( nL , 1 );
                 t_mi = false;
             end
+            chck = 1;
             type = false;
         elseif contains( varargin{ i } , '_i' )
             type = true;

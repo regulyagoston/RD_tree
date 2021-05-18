@@ -86,9 +86,11 @@ else
     out.Y_hat_i(  ITT ) = d_p;
     out.Y_hat_i( nITT ) = d_m;
     % Treatment values
-    out.tau_i = repmat( d_p - d_m , [ n_ell , 1 ] );
+    out.tau_j = d_p - d_m;
+    out.tau_i = repmat( out.tau_j , [ n_ell , 1 ] );
     out.sigma2_p_j = var( Y(  ITT ) );
     out.sigma2_m_j = var( Y( nITT ) );
+    out.tau_se_j = sqrt( out.sigma2_p_j ./ n_p + out.sigma2_m_j ./ n_m );
 end
 
 

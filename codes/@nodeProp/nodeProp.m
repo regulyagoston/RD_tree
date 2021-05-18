@@ -205,22 +205,22 @@ classdef nodeProp
                 obj.logID_tr  = get_logIdx( obj , data.Z_tr  );
             end
             Y = data.Y_tr( obj.logID_tr , : );
-            if isprop( data , 'X_tr' )
+            if data.log_X_tr
                 X = data.X_tr( obj.logID_tr , : );
             else
                 X = NaN;
             end
-            if isprop( data , 'W_tr' )
+            if data.log_W_tr
                 W = data.W_tr( obj.logID_tr , : );
             else
                 W = NaN;
             end
-            if isprop( data , 'ITT_tr' )
+            if data.log_ITT_tr
                 ITT = data.ITT_tr( obj.logID_tr , : );
             else
                 ITT = NaN;
             end
-            if isprop( data , 'cl_tr' )
+            if data.log_cl_tr
                 cl = data.cl_tr( obj.logID_tr , : );
             else
                 cl = NaN;
@@ -277,9 +277,6 @@ classdef nodeProp
                 obj2.n_j_est   = sum( obj2.logID_est );
             end
         end
-    end
-    
-    methods ( Static )
         %% Check whether the two nodes are the same between the tolerance range (only core properties)
         function tf = issameNode( node1 , node2 , tolerance )
             tf = false;

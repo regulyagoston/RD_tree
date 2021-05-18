@@ -28,8 +28,8 @@ classdef optCART < dynamicprops
                        % 'rpart' - using all the possible splitting value (same as Hastie et. al.)
                        % 'causal-trees-AI'  - Athey-Imbens, using buckets
                        % 'causal-trees-RDD' - splitting optimized for RDD, using buckets
-        % Maximum split Number of the Splitted values in the feature
-        numSplit  = 20;
+        % Maximum split that the algorithm computes by hand
+        numSplit  = 10;
     end 
     %% Criterion type and order of polinomials used for estimation
     properties

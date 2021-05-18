@@ -210,6 +210,95 @@ classdef tree
         end
         
     end
+    
+    methods
+        function [ log_same , log_potency ] = issameTree( obj , a_tree , tolerance )
+            % a_tree is the 'true' tree, which obj-tree is compared
+            if ~isa( a_tree , 'tree' )
+                error('Alternative tree must be a tree object!')
+            end
+            if nargin < 3
+                tolerance = 0.1;
+            end
+            
+            % Find the leaves ids and the number of leaves
+            l_id   = findleaves( obj );
+            nL = numel( l_id );
+            % true tree
+            l_id_a = findleaves( a_tree );
+            nL_a = numel( l_id_a );
+            
+            % If the number of leaves are not the same and only interested
+            % in whether they are the same tree or not
+            n2 = nargout < 2;
+            if n2 && nL ~= nL_a
+                log_same = false;
+                return;
+            elseif nargout == 2
+                % Get all the other nod id from the true tree
+                n_id_a = 1 : nnodes( a_tree );
+                n_id_a( l_id_a ) = [];
+                nN_a = numel( n_id_a );
+            end
+            
+            % Iterate through the leaves of the object
+            leaf_chck_same = false( nL , 1 );
+            leaf_chck_potency = false( nL , 1 );
+            for i = 1 : nL
+                if n2
+                    % If only check whether are they the same only need to
+                    % iterate through the leaves of the true tree
+                    for j = 1 : nL_a
+                        tf = issameNode( obj.Node{ l_id( i ) } , a_tree.Node{ l_id_a( j ) } , tolerance );
+                        if tf
+                            leaf_chck_same( i ) = true;
+                            % Drop that leaf from checking
+                            l_id_a( j ) = [];
+                            nL_a = nL_a - 1;
+                            break;
+                        end
+                    end
+                    % If not found a fit, then stop and return
+                    if ~tf
+                        log_same = false;
+                        return;
+                    end                    
+                else
+                    % Check the leaves
+                    for j = 1 : nL_a
+                        tf = issameNode( obj.Node{ l_id( i ) } , a_tree.Node{ l_id_a( j ) } , tolerance );
+                        if tf
+                            leaf_chck_same( i ) = true;
+                            leaf_chck_potency( i ) = true;
+                            % Drop that leaf from checking
+                            l_id_a( j ) = [];
+                            nL_a = nL_a - 1;
+                            break;
+                        end
+                    end
+                    % Check the other nodes for potency
+                    if ~tf
+                        for j = 1 : nN_a
+                            tf = issameNode( obj.Node{ l_id( i ) } , a_tree.Node{ n_id_a( j ) } , tolerance );
+                            if tf
+                                leaf_chck_potency( i ) = true;
+                                % Drop that leaf from checking
+                                n_id_a( j ) = [];
+                                nN_a = nN_a - 1;
+                                break;
+                            end
+                        end
+                    end
+                end
+            end
+            log_same = all( leaf_chck_same );
+            log_potency = all( leaf_chck_potency );
+            
+        end
+            
+            
+        
+    end
 
 end
 

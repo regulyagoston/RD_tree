@@ -149,7 +149,12 @@ if nclass == 0
         right_con_e = n_est - left_con_e;
         logNum_est  = left_tr_e >= minObs & left_con_e >= minObs & ...
                       right_tr_e >= minObs & right_con_e >= minObs;
+        if sum( logNum_est ) == 0
+            split = NaN;
+            return;
+        end
         X_e_v       = X_est( logNum_est );
+        
         logEst_valid = X( logValid ) >= X_e_v( 1 ) & X( logValid ) <= X_e_v( end );
         
         
@@ -165,7 +170,7 @@ if nclass == 0
             % Find the bucket
             b_bucket = buc_num_i( aux_1 == bX );
             % Splitting value is the largest value in the bucket
-            aux_split = aux_1( b_bucket == buc_num_i );
+            aux_split = aux_1( b_bucket( 1 ) == buc_num_i );
             split = aux_split( end );
             % Alternatively Athey et al takes the averages - but this is stupid
             % Get the last value from the bucket for treatment and control

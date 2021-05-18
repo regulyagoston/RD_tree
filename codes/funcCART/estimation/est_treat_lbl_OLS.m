@@ -117,6 +117,7 @@ else
     out.d_m = d_m;
     % Treatment values - diff in the intercept
     out.tau_i = repmat( d_p( 1 ) - d_m( 1 ) , [ n_ell , 1 ] );
+    out.tau_j = d_p( 1 ) - d_m( 1 );
     % Inverses for homoskedastic case
     out.Mi_p_j = inv( 1 ./ n_p .* ( X0_p' * X0_p ) );
     out.Mi_m_j = inv( 1 ./ n_m .* ( X0_m' * X0_m ) );
@@ -143,6 +144,7 @@ else
         tau_y_i = out.tau_i( 1 );
         % Save actual LATE
         out.tau_i = out.tau_y_i ./ out.tau_w_i;
+        out.tau_j = out.tau_i( 1 );
     else
         W_p = NaN;
         W_m = NaN;

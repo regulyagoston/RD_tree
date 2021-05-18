@@ -31,42 +31,19 @@ parent = 1;
 % Only split to two parts at each iteration
 % Once a split is made it is fixed. In next iteration only searches along
 %   the already splitted sample
-% For initializations
-IDnode = 1;
-numNode_j = nnodes( obj );
-numLeaves = numel( findleaves( obj ) );
 
+% Stop if any is satisfied
+if any( [ optTree.maxLevel == 1 , optTree.maxNodes == 1 , optTree.maxLeaves == 1 , ...
+        ( 2 * optTree.minObs ) > obj.Node{ 1 }.n_j_tr ] )
+    stopReason = 'No more valid nodes';
+    return;
+end
+
+numNode_j = 1;
+numLeaves = 1;
+IDnode    = 1;
+IDsib     = 1;
 for j = 1 : optTree.maxIterGrow
-    
-    %% Check for stopping the algorithm
-    % Too much nodes -> set it as a terminal node 
-    if optTree.maxNodes <= numNode_j
-        obj.Node{ IDnode }.Checked = true;
-        obj.Node{ IDnode }.Failed  = 4;
-        stopReason = 'Tree-size reached the maximal number of nodes, tree growing stopped!';
-        %disp( 'Tree-size reached the maximal number of nodes, tree growing stopped!' )
-        return;
-    end
-    % Too much leaves -> set it as a terminal node
-    if optTree.maxLeaves <= numLeaves
-        obj.Node{ IDnode }.Checked = true;
-        obj.Node{ IDnode }.Failed  = 5;
-        stopReason = 'Tree-size reached the maximal number of leaves, tree growing stopped!';
-        %disp( 'Tree-size reached the maximal number of leaves, tree growing stopped!' )
-        return;
-    end
-    % Check for depth of the tree. If reached the maximum level set it
-    % a terminal node
-    if ~isinf( optTree.maxLevel )
-        dt = depthtree( obj );
-        node_level = dt.Node{ IDnode };
-        if node_level == optTree.maxLevel
-            obj.Node{ IDnode }.Checked = true;
-            obj.Node{ IDnode }.Failed  = 3;
-            obj.Node{ IDsib }.Checked = true;
-            obj.Node{ IDsib }.Failed  = 3;
-        end
-    end
     
     %% Get potential variables to split
     % 1st - select those features which are a valid split on that node
@@ -103,11 +80,51 @@ for j = 1 : optTree.maxIterGrow
         % Select the node with best split criterion
         bestCrit = min( cand_ios( cand_valid ) );
         bestNode = cand_bS_f( cand_ios == bestCrit , : );
-        %bestNode = select_feature( obj , parent , cand_bS_f( cand_valid , : ) , data , optTree );
         % Add Nodes to the tree
         [ obj , IDnode ] = addnode( obj , parent , bestNode( 1 , 1 ) );
         [ obj , IDsib  ] = addnode( obj , parent , bestNode( 1 , 2 ) );
     end
+    
+    %% Check for stopping the algorithm
+    % Check for depth of the tree. If reached the maximum level set it
+    % a terminal node
+    if ~isinf( optTree.maxLevel )
+        dt = depthtree( obj );
+        node_level = dt.Node{ IDnode };
+        if node_level == optTree.maxLevel
+            obj.Node{ IDnode }.Checked = true;
+            obj.Node{ IDnode }.Failed  = 3;
+            obj.Node{ IDsib }.Checked = true;
+            obj.Node{ IDsib }.Failed  = 3;
+        end
+    end
+    % Too much nodes -> set it as a terminal node 
+    if optTree.maxNodes <= numNode_j
+        obj.Node{ IDnode }.Checked = true;
+        obj.Node{ IDnode }.Failed  = 4;
+        stopReason = 'Tree-size reached the maximal number of nodes, tree growing stopped!';
+        %disp( 'Tree-size reached the maximal number of nodes, tree growing stopped!' )
+        return;
+    end
+    % Too much leaves -> set it as a terminal node
+    if optTree.maxLeaves <= numLeaves
+        obj.Node{ IDnode }.Checked = true;
+        obj.Node{ IDnode }.Failed  = 5;
+        stopReason = 'Tree-size reached the maximal number of leaves, tree growing stopped!';
+        %disp( 'Tree-size reached the maximal number of leaves, tree growing stopped!' )
+        return;
+    end
+    
+    % Not enough observations in the leaf -> set it as a terminal node
+    if obj.Node{ IDnode }.n_j_tr < 2 * optTree.minObs
+        obj.Node{ IDnode }.Checked = true;
+        obj.Node{ IDnode }.Failed  = 6;
+    end
+    if obj.Node{ IDsib }.n_j_tr < 2 * optTree.minObs
+        obj.Node{ IDsib }.Checked = true;
+        obj.Node{ IDsib }.Failed  = 6;
+    end
+    
     
     % Set the next candidate parent:
     %   next candidate split is the next valid child

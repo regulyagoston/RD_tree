@@ -38,10 +38,6 @@ try
     parfor k = 1 : obj_optCART.numKfold
         % Fit a full model on the cv data set
         obj_tree_k = growRDDtree( train_sample( k ) , obj_optCART );
-    %     % Old codes:
-    %     %obj_tree_k = clearTree( obj_tree );
-    %     % Update with the k'th training sample
-    %     %obj_tree_k = updateTree( obj_tree_k , [] , train_sample( k ) , obj_optCART , true );
         % For each candidate complexity parameter
         for i = 1 : nM
             % Prune trees based on training sample
@@ -64,10 +60,6 @@ catch
     for k = 1 : obj_optCART.numKfold
         % Fit a full model on the cv data set
         obj_tree_k = growRDDtree( train_sample( k ) , obj_optCART );
-    %     % Old codes:
-    %     %obj_tree_k = clearTree( obj_tree );
-    %     % Update with the k'th training sample
-    %     %obj_tree_k = updateTree( obj_tree_k , [] , train_sample( k ) , obj_optCART , true );
         % For each candidate complexity parameter
         for i = 1 : nM
             % Prune trees based on training sample

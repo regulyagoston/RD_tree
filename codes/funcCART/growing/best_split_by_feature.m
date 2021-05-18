@@ -12,26 +12,27 @@ node        = tr_tree.Node{ parentID };
 Zi = data.Z_tr( node.logID_tr , id_f );
 Zu = unique( Zi );
 nZ = numel( Zu );
+
 Yi = data.Y_tr( node.logID_tr , : );
-if isprop( data , 'W_tr' )
+if data.log_W_tr
     % Get units who are treated within that leaf
     Wi = data.W_tr( node.logID_tr , : );
 else
     Wi = [];
 end
-if isprop( data , 'ITT_tr' )
+if data.log_ITT_tr
     % Get units who are treated within that leaf
     ITTi = data.ITT_tr( node.logID_tr , : );
 else
     ITTi = [];
 end
-if isprop( data , 'X_tr' )
+if data.log_X_tr
     % Get controls within that leaf
     Xi = data.X_tr( node.logID_tr , : );
 else
     Xi = [];
 end
-if isprop( data , 'cl_tr' )
+if data.log_cl_tr
     cl_i = data.cl_tr( node.logID_tr , : ); 
 else
     cl_i = NaN;
@@ -51,8 +52,7 @@ end
 %%% Different implemented (fast) rutines:
 bf = false;
 % 1st -> rpart prediction, using means and MSE leaf-by-leaf
-if nZ > optTree.numSplit ... 
-   && strcmp( optTree.splitType , 'rpart' ) && strcmp( optTree.type , 'prediction' ) ...
+if strcmp( optTree.splitType , 'rpart' ) && strcmp( optTree.type , 'prediction' ) ...
    && strcmp( optTree.model , 'mean' )   && strcmp( optTree.eval_level , 'leaf-by-leaf' ) ...
    && strcmp( optTree.criteria , 'MSE' )
 
@@ -104,6 +104,8 @@ elseif isnan( split ) || ~bf
     bS_f.Failed               = 2;
     bS_f.feature_chck( id_f ) = false;
     valid_split               = false;
+    cand_IOS                  = Inf;
+    return;
 end
 
 %% Calculate the IOS criterion

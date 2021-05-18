@@ -2,7 +2,6 @@
 
 function split = split_rpart_classical( Y_leaf , Zi , optTree )
 
-
 % All the variables to be splitted
 Y_temp = Y_leaf;
 % Variable is assumed to be continuous -> tricky way to calculate MSE

@@ -4,9 +4,9 @@
 function [ xeval , tau_bs , tau_se_bs ] = cate_plot_onefeature( tree , sample , Zid , neval )
 
 % Get the treatments and the features
-[ tau_all , tau_se_all , Z_all ] = get_treatment_n_features( tree , sample );
+[ tau_all , tau_se_all ] = get_treatment_n_features( tree , sample.Z_est );
 % Sort along the selected feature
-[ Zs , idZ ] = sort( Z_all( : , Zid ) );
+[ Zs , idZ ] = sort( sample.Z_est( : , Zid ) );
 tau_sorted = tau_all( idZ );
 tau_se_sorted = tau_se_all( idZ );
 % Create bin-scatter values (using equal spacing and means

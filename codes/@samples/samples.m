@@ -17,6 +17,12 @@ classdef samples < dynamicprops
    properties
       train_to_est_ratio = 1; 
    end
+   properties ( Hidden )
+      log_X_tr   = false;
+      log_W_tr   = false;
+      log_ITT_tr = false;
+      log_cl_tr  = false;
+   end
    
    
     methods
@@ -291,6 +297,7 @@ classdef samples < dynamicprops
                     end
                 end
             end
+            update_sample( obj );
         end
         
         function val = get.n_tr( obj )
@@ -318,6 +325,23 @@ classdef samples < dynamicprops
     
     %% Create Cross-Validation samples
     methods
+        function update_sample( obj )
+            if isprop( obj , 'X_tr' )
+                obj.log_X_tr   = true;
+            end
+            if isprop( obj , 'W_tr' )
+                obj.log_W_tr   = true;
+            end
+            
+            if isprop( obj , 'ITT_tr' )
+                obj.log_ITT_tr = true;
+            end
+            
+            if isprop( obj , 'cl_tr' )
+                obj.log_cl_tr  = true;
+            end
+            
+        end
         [ train_sample , test_sample ] = create_CV_samples( obj_samples , obj_optCART , K );
     end
     

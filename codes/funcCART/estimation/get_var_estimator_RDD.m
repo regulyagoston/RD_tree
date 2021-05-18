@@ -45,8 +45,8 @@ switch varEstimator
         l1 = true;
 end
 
-% Decide if there are clusters
-l_cl = all( ~isnan( cl ) );
+% Decide if there are clusters (enough to check the first observation)
+l_cl = ~isnan( cl( 1 ) );
 
 % Decide if there is need to compute the variance of the treatment eq
 l_teq = nargout > 2 && fuzzy;

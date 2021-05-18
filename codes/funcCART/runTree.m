@@ -3,9 +3,9 @@
 
 function [ est_tree , obj_tree , opt_beta , s_oOS , beta , oOS ] = runTree( obj_sample , optTree )
 
-
+% Growing a large tree
 [ obj_tree , stopWhy ] = growRDDtree( obj_sample , optTree );
-% Cross-validation
+% Cross-validation to find optimal complexity parameter (beta)
 [ opt_beta , s_oOS , beta , oOS ] = cross_validate( obj_tree , obj_sample , optTree );
 % Prune with optimal complexity parameter
 finalTree_tr = pruning( obj_tree , obj_sample , optTree , opt_beta );
