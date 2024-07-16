@@ -20,4 +20,4 @@ This repository contains codes and a description of how to estimate heterogeneou
  
 **Note:** This is the first version, many refinements are needed. Description of the codes is work-in-progress.
 
-*All feedbacks are welcomed!* Please write to: reguly_agoston-at-phd.ceu.edu
+*All feedbacks are welcomed!* Please write to: reguly_agoston-at-uni-corvinus.hu
