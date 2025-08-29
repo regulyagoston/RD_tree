@@ -10,10 +10,9 @@ This repository contains codes and a description of how to estimate heterogeneou
 
 1. Add the downloaded/forked/cloned **algorithm** folder to your path in MatLab.
 2. Open **tryout.m**, which gives a toy example of how to use the package.
-  - The main function is `runTree()` function.
+  - The main function is `runTree_uni()` function.
   - However, you need to carefully specify your `sample` object as well as `optCART` object. The comments should guide you on how to set them.
 3. `tostring()` function will draw you the resulting tree.
-4. After line 86 you can find parts of the `runTree()` function if you want to have a more detailed picture of what the algorithm does.
  
 **Note:** This is the second version, containing nonparametric estimator.
 
