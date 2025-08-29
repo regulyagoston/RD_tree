@@ -1,7 +1,7 @@
 # Regression Discontinuity Tree
 
 Welcome to the GitHub page of Regression Discontinuity Tree. 
-This page provides the codes for this method proposed by Reguly (2025): Discovering Heterogeneous Treatment Effects in Regression Discontinuity Designs
+This page provides the codes for this method proposed by [Reguly (2025): Discovering Heterogeneous Treatment Effects in Regression Discontinuity Designs](https://arxiv.org/abs/2106.11640).
 
 
 ## Use of the codes
