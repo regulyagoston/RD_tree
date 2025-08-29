@@ -308,7 +308,7 @@ classdef optCART < dynamicprops
            end
         end
         function set.numSplit( obj , val )
-            if numel( val ) ~= 1 || val < 0 || mod( val , 1 ) ~= 0
+            if numel( val ) ~= 1 || val < 0 || ~( mod( val , 1 ) == 0 || isinf( val ) )
                error('optCart:numSplit:wrongInput',...
                      'Invalid value for maximum number of splits during searching for the splits, use an integer larger than 0')
            else

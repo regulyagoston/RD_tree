@@ -1,62 +1,64 @@
 %% Example for Regression Discontinuity Tree
-%   Agoston Reguly (2021)
+%   Agoston Reguly (2025)
 clear all
 clc
 
-%% Generating simple RD
-rng(100)
+%% Generating simple RD following Calanico et al (2014)
+rng(777)
 N  = 10000;
-sigmaY = 1;
-% Uniform running variable between -1 and 1
-X = rand( [ N , 1 ] ) * 2 - 1;
-% Threshold value
+sigmaY = 0.05^2;
+% Definition of getting treatment
+X = random( 'beta' , 2 , 4 , [ 2*N , 1 ] ) * 2 - 1;
+dropX = X < -0.99 | X > 0.99;
+X = X( ~dropX );
+X = X( 1 : N );
 c = 0;
 W = X >= c;
-% Create two binary features
-Z = rand( [ N , 2 ] );
-Z( Z  > 0.5 ) = 1;
-Z( Z <= 0.5 ) = 0;
-% Two treatment effects, depends only on first feature
-treatment =  1 .* double( Z( : , 1 ) == 0 ) + ...
-             -1 .* double( Z( : , 1 ) >  0 );
-% Conditional Expectation function is also heterogen
-eta = 2 .* X .* Z( : , 2 ) - 2 .* X .* ( 1 - Z( : , 2 ) );
-% Outcome
-Y = eta + ( X >= c ) .* treatment + randn( [ N , 1 ] ) * sigmaY;
+eps = randn( [ N , 1 ] ) .* sigmaY;
+Z_pol    = rand( N , 1 ) > 0.5;
+n_states = floor( N ./ 50 );
+Z_states = zeros( N , 49 );
+for i = 1 : 48
+    Z_states( ( i - 1 ) * n_states + 1 : i * n_states , i ) = 1;
+end
+Z_states( i * n_states + 1 : end ,  end ) = 1;
+Z = [ Z_pol , Z_states( randperm( N ) , : ) ];
+chi  = ( 0.56 - 0.48 ) .* Z( : , 1 ) + ( 0.50 - 0.48 ) .* ( 1 - Z( : , 1 ) );
+eta1_1 = 0.48 + 1.27 .* X + 7.18 .* X.^2 + 20.21 .* X.^3 + 21.54 .* X.^4 + 7.33 .* X.^5;
+eta1_2 = 0.48 + 2.35 .* X + 8.18 .* X.^2 + 22.21 .* X.^3 + 24.14 .* X.^4 + 8.33 .* X.^5;
+eta2_1 = 0.48 + 0.84 .* X - 3.00 .* X.^2 +  7.99 .* X.^3 -  9.01 .* X.^4 + 3.56 .* X.^5;
+eta2_2 = 0.48 + 1.21 .* X - 2.90 .* X.^2 +  6.99 .* X.^3 - 10.01 .* X.^4 + 4.56 .* X.^5;
+Y = ( eta1_1 .* Z( : , 1 ) + eta1_2 .* ( 1 - Z( : , 1 ) ) ) .* ( 1 - W ) +...
+    ( eta2_1 .* Z( : , 1 ) + eta2_2 .* ( 1 - Z( : , 1 ) ) ) .* W + W .* chi + eps;
 % Scatter plot to see the design
 % scatter( X , Y )
 
 
-%% CART options - Simple estimation
+%% CART options - Simple estimation%% CART options - Simple estimation
 optTree                 = optCART;
-optTree.maxNodes        = 50;
-optTree.maxLevel        = 10;       % Maximum depth of the tree
-optTree.maxLeaves       = 15;
-optTree.minObs          = 50;       % Minimum observations within each leaf
-optTree.cp              = 0.0001;   % Stopping rule for growing the tree: criterion must improve at least by this amount
-optTree.maxIterGrow     = Inf;      % Maximum iteration during the growth of the tree
-optTree.numKfold        = 5;        % number of K in K-fold cross-validation
-optTree.CV1SE           = false;    % use of 1-SE rule in cross-validation
-optTree.model           = 'linear'; % Set the model type: in case of RDD 'linear' is required
-                                       % alternatively 'mean' can be used for rpart or Athey-Imbens type of
-                                       % estimation, where there is only means computed
-optTree.honest          = true;     % Set to use honest approach
-optTree.type            = 'CATE';   % CATE is for sharp RD 'CLATE' id for fuzzy design
-optTree.criteria        = 'RDD';    % Use of RDD criterion, 
-                                      % alternatively one can use 'athey-imbens' for experimental and observational studies with unconfoundedness 
-                                      % or 'MSE' for rpart prediction case
-optTree.varEstimator    = 'hce-1';  % type of variance estimator: 'simple','hce-0','hce-1'. 
-                                      % For clustered SE, one needs to add the clusters when creating the sample
-                                      % and use one of the estimators here as well
-optTree.criteria_weight = 0.5;      % Criterion weight: 0.5 -> EMSE, using 1 -> `adaptive' criterion.
-optTree.splitType       = 'causal-tree-RDD';
-                                    % Set the splitting criterion to causal-tree RDD.
-                                       % alternatively, one can use other type of splitting methods as well!
-optTree.obsBucket       = 4;        % Minimum number of observations in the buckets
-optTree.maxBucket       = Inf;      % Maximum number of buckets
-optTree.orderPolinomial = 1;        % Order of polinomial used during the estimation
-setCritFnc( optTree );              % Set everything in the object of optTree
-
+optTree.maxNodes        = 50; % Max number of nodes in the tree
+optTree.maxLevel        = 10; % Maximum depth of the tree
+optTree.maxLeaves       = 15; % Maximum number of leaves
+optTree.minObs          = 50; % Minimum number of effective observations within each leaf
+optTree.cp              = 0.0001; % Criterion improvement requirement for leaf to be valid
+optTree.maxIterGrow     = Inf; % Maximum number of iteration by the algorithm
+optTree.numKfold        = 10;  % Number of folds during cross-validation
+optTree.numSplit        = Inf; % Maximum number of splits for each feature
+optTree.honest          = true; % Honest sample splitting
+optTree.CV1SE           = false; % For cross-validation use 1SE rule or not
+optTree.seed            = 1; % Seed
+optTree.splitType       = 'causal-tree-npRDD-uni'; % Split criterion -- use unified bandwidth with nonparametric estimator
+optTree.type            = 'CATE'; % CATE or CLATE
+optTree.model           = 'local'; % local polynomial model
+optTree.criteria        = 'RDD';   % Criterion is for RDD
+optTree.varEstimator    = 'hce-1'; % Type of variance estimator
+optTree.obsBucket       = 4; % Minimum number of effective observations required for valid splitting value
+optTree.orderPolinomial = 1; % Order of polynomial
+optTree.kernel          = 'Triang'; % Kernel type
+optTree.cv_rm_outlier   = true; % Exclude outliers during cross-validation or not
+optTree.bw_type = 'unified'; % Type of bandwidth
+optTree.bwselect = 'cerrd';  % Initial bandwidth is given by CE or MSE optimal bw
+setCritFnc( optTree );
 
 %% Set-up the sample object
 % Indexes for the training sample and for the estimation sample:
@@ -72,42 +74,25 @@ obj_sample = samples( optTree , Y , Z , 'index4TrEst' , indTrEst , 'X' , X , 'cu
 % can use 'cluster' and the variable to estimate clustered SE
 
 %% Find and estimate the optimal tree
-[ est_tree , large_tree , opt_gamma , cv_crit , cand_gamma , cv_all ] = runTree( obj_sample , optTree );
+bw_search = 'grid';
+num_bw = 20;
+[ final_tree , large_tree, opt_gamma, opt_bw, emse_crit, cand_bw ] = runTree_uni( obj_sample , optTree, bw_search, num_bw );
+
+
 % Outputs:
-%  est_tree: estimated optimal RD tree
+%  final_tree: estimated optimal RD tree
 % not necessary outputs:
 %  large_tree: large tree estimated on training sample
 %  opt_gamma: optimal pruning parameter
-%  cv_crit: averaged cross-validation criteria for each candidate penalty parameters
-%  cand_gamma: candidate penalty parameters
-%  cv_all: cross-validation criteria for each candidate penalty parameters and for all folds
+%  opt_bw: optimal bandwidth parameter
+%  emse_crit: averaged cross-validation criteria for each bandwidth
+%  parameters (with optimal prining parameter)
+%  cand_bw: candidate bandwidth parameters
 
+%%
 % Visualize the tree:
-tostring( est_tree )
+tostring( final_tree )
 
-
-
-%% Finding optimal RD tree in details
-%%%%%%%
-
-% 1) Growing a large tree
-[ obj_tree , stopWhy ] = growRDDtree( obj_sample , optTree );
-
-% 2) Cross-validation:
-%  - opt_gm: is the optimal penalty parameter
-% if want to investigate the cross-validation function:
-%  - s_oOS: is the average of the estimated cross-validation (out-of-sample)
-%  criterion to check the curvature
-%  - gammas: candidate pruning parameters which are used
-%  - oOS: all the K cross-validation criterion values
-
-[ opt_gm , s_oOS , gammas , oOS ] = cross_validate( obj_tree , obj_sample , optTree );
-
-% 3) Prune with optimal penalty parameter:
-%   gives the tree, estimated on the training sample!
-largeTree_tr = pruning( obj_tree , obj_sample , optTree , opt_gm );
-
-% 4) Run the estimation on the estimation sample
-est_tree2 = estimate_tree_est( largeTree_tr , obj_sample , optTree );
-
-tostring( est_tree2 )
+% Print optimal parameters
+sprintf(horzcat('Optimal bandwidth parameter:', num2str( opt_bw ) ) )
+sprintf(horzcat('Optimal pruning parameter:', num2str( opt_gamma ) ) )

@@ -1,6 +1,6 @@
 
 
-function [ est_tree , obj_tree , opt_beta , s_oOS, opt_bw, opt_bw_b ] = runTree_uni( obj_sample , optTree, cv_type, num_bw )
+function [ est_tree , obj_tree , opt_beta , opt_bw, s_oOS, cand_bw, opt_bw_b ] = runTree_uni( obj_sample , optTree, cv_type, num_bw )
 
 
 % Cross-validation to find optimal complexity parameter (beta) and
@@ -12,7 +12,7 @@ if strcmp( cv_type, 'fmincon' )
     optTree.bw_b = opt_bw .* rho;
     optTree.num_bw = num_bw;
 elseif strcmp( cv_type, 'grid' )
-    [ opt_beta , opt_bw, opt_bw_b, s_oOS ] = cross_validate_bws_grid( obj_sample , optTree, [] );
+    [ opt_beta , opt_bw, opt_bw_b, s_oOS, cand_bw ] = cross_validate_bws_grid( obj_sample , optTree, [] );
     optTree = copyWithChange(optTree,'bw', opt_bw);
     optTree = copyWithChange(optTree,'bw_b', opt_bw_b);
     large_tree = growRDDtree( obj_sample , optTree );
